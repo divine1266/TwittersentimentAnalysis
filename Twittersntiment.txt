@@ -1,0 +1,133 @@
+
+-- must be opened in colab--
+
+In [49]:
+# importing data manipulation libraries
+import pandas as pd
+import numpy as np
+import re
+import string
+from string import punctuation
+
+# importing text preprocessing libraries
+import nltk
+nltk.download('wordnet')
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+
+# Machine learning libraries 
+from sklearn.metrics import accuracy_score
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+
+import warnings
+warnings.filterwarnings("ignore")
+[nltk_data] Downloading package wordnet to /root/nltk_data...
+[nltk_data]   Package wordnet is already up-to-date!
+In [25]:
+# creating English Stopwords set
+import nltk
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+[nltk_data] Downloading package stopwords to /root/nltk_data...
+[nltk_data]   Package stopwords is already up-to-date!
+Since the dataset did not have column names, we explicitly define it
+
+In [26]:
+col = ['target','ids','date','flag','user','text']
+In [45]:
+df = pd.read_csv('/content/drive/MyDrive/training.1600000.processed.noemoticon.csv', encoding='ISO-8859-1', names = col)
+In [28]:
+df.head(10)
+Out[28]:
+target	ids	date	flag	user	text
+0	0	1467810369	Mon Apr 06 22:19:45 PDT 2009	NO_QUERY	_TheSpecialOne_	@switchfoot http://twitpic.com/2y1zl - Awww, t...
+1	0	1467810672	Mon Apr 06 22:19:49 PDT 2009	NO_QUERY	scotthamilton	is upset that he can't update his Facebook by ...
+2	0	1467810917	Mon Apr 06 22:19:53 PDT 2009	NO_QUERY	mattycus	@Kenichan I dived many times for the ball. Man...
+3	0	1467811184	Mon Apr 06 22:19:57 PDT 2009	NO_QUERY	ElleCTF	my whole body feels itchy and like its on fire
+4	0	1467811193	Mon Apr 06 22:19:57 PDT 2009	NO_QUERY	Karoli	@nationwideclass no, it's not behaving at all....
+5	0	1467811372	Mon Apr 06 22:20:00 PDT 2009	NO_QUERY	joy_wolf	@Kwesidei not the whole crew
+6	0	1467811592	Mon Apr 06 22:20:03 PDT 2009	NO_QUERY	mybirch	Need a hug
+7	0	1467811594	Mon Apr 06 22:20:03 PDT 2009	NO_QUERY	coZZ	@LOLTrish hey long time no see! Yes.. Rains a...
+8	0	1467811795	Mon Apr 06 22:20:05 PDT 2009	NO_QUERY	2Hood4Hollywood	@Tatiana_K nope they didn't have it
+9	0	1467812025	Mon Apr 06 22:20:09 PDT 2009	NO_QUERY	mimismo	@twittera que me muera ?
+Columns like ids, date, flag and user aren't gonna help the model to make classification so we're gonna drop them
+
+In [29]:
+df = df.drop(['ids','date','flag','user'],axis = 1)
+In [16]:
+df.head(5)
+Out[16]:
+target	text
+0	0	@switchfoot http://twitpic.com/2y1zl - Awww, t...
+1	0	is upset that he can't update his Facebook by ...
+2	0	@Kenichan I dived many times for the ball. Man...
+3	0	my whole body feels itchy and like its on fire
+4	0	@nationwideclass no, it's not behaving at all....
+In [17]:
+df.describe()
+Out[17]:
+target
+count	1.600000e+06
+mean	2.000000e+00
+std	2.000001e+00
+min	0.000000e+00
+25%	0.000000e+00
+50%	2.000000e+00
+75%	4.000000e+00
+max	4.000000e+00
+We can conclude that target values ranges between [0,4]
+
+0 - means a negative sentiment
+2 - being a neutral sentiment
+4 - means a positive sentiment
+In [18]:
+df.isnull().values.any()
+Out[18]:
+False
+Text Preprocessing¶
+Casing - We have to convert all the text to either lower case or upper case.
+Noise Removal - Removing unwanted urls and characters like #,@,!,?, etc.
+Tokenization - We have to turn tweets into tokens, tokens are words seperated by spaces.
+Stopwords Removal - Some of the words do not make sense/contribute to ML model so we're gonna remove them.
+Text Normalization using Lemmatization
+In [34]:
+nltk.download('punkt')
+[nltk_data] Downloading package punkt to /root/nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+Out[34]:
+True
+In [50]:
+def preprocess_tweet (tweet):
+    tweet = tweet.lower() # transform all texts to lowercase
+    tweet = ''.join(c for c in tweet if not c.isdigit()) #remove digits
+
+    tweet = re.sub("@[A-Za-z0-9]+","",tweet) #Remove @ sign
+    tweet = re.sub(r"(?:\@|http?\://|https?\://|www)\S+", "", tweet) #Remove http links
+      
+    tweet = tweet.replace("#", "").replace("_", " ") #Remove hashtag sign but keep the text
+    tweet = ''.join(c for c in tweet if c not in punctuation) #remove all punctuation
+    
+    wordnet_lemmatizer = WordNetLemmatizer() # with use of morphological analysis of words
+    tweet = [wordnet_lemmatizer.lemmatize(word) for word in nltk.word_tokenize(tweet)]
+    
+    
+    tweet = " ".join(w for w in tweet)
+    return tweet
+In [53]:
+nltk.download('omw-1.4')
+[nltk_data] Downloading package omw-1.4 to /root/nltk_data...
+Out[53]:
+True
+In [54]:
+preprocess_tweet('Hi, there im sourav biswal from iiit bh')
+Out[54]:
+'hi there im sourav biswal from iiit bh'
+In [ ]:
+
