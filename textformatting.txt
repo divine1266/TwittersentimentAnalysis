@@ -1,0 +1,39 @@
+--Must be opened in colab--
+
+In [ ]:
+from transformers import AutoTokenizer
+from transformers import AutoModelForSequenceClassification
+from scipy.special import softmax
+Running cells with 'c:\Users\dell\AppData\Local\Microsoft\WindowsApps\python3.10.exe' requires ipykernel package.
+
+Run the following command to install 'ipykernel' into the Python environment. 
+
+Command: 'c:/Users/dell/AppData/Local/Microsoft/WindowsApps/python3.10.exe -m pip install ipykernel -U --user --force-reinstall'
+In [ ]:
+MODEL = f"cardiffnlp/twitter-roberta-base-sentiment"
+tokenizer = AutoTokenizer.from_pretrained(MODEL)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL)
+Running cells with 'c:\Users\dell\AppData\Local\Microsoft\WindowsApps\python3.10.exe' requires ipykernel package.
+
+Run the following command to install 'ipykernel' into the Python environment. 
+
+Command: 'c:/Users/dell/AppData/Local/Microsoft/WindowsApps/python3.10.exe -m pip install ipykernel -U --user --force-reinstall'
+In [5]:
+def sentiment(tweet):
+    encoded_text = tokenizer(tweet,return_tensors='pt')
+    output = model(**encoded_text)
+    scores = output[0][0].detach().numpy()
+    scores = softmax(scores)
+    scores_dict = {
+        'NEGATIVE' : scores[0],
+        'NEUTRAL' : scores[1],
+        'POSITIVE' : scores[2]
+    }
+    return scores_dict
+In [7]:
+tweet = "you're a sweet person😤"
+sentiment(tweet)
+Out[7]:
+{'NEGATIVE': 0.85113734, 'NEUTRAL': 0.13698761, 'POSITIVE': 0.011875027}
+In [ ]:
+ 
