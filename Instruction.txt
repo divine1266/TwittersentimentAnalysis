@@ -1,1 +1,4 @@
-
+--Make sure you get real sentiments from twitter--.
+-- This model is only meant to handle twitter sentiments--.
+-- Enjoy--
+-- For more enquiries email me chididivine877@gmail.com--.
